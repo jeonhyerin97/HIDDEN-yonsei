@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STUDY — HIDDEN</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-study-magazine">
+  
+  <!-- Black Header Banner -->
+  <header class="magazine-banner"></header>
+  
+  <!-- Navigation -->
+  <nav class="nav nav--archive magazine-nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">HIDDEN</a>
+      <div class="nav-links">
+        <a href="projects.html" class="nav-link">PROJECTS</a>
+        <a href="drawings.html" class="nav-link">DRAWINGS</a>
+        <a href="graphics.html" class="nav-link">GRAPHICS</a>
+        <a href="study.html" class="nav-link nav-link--active">STUDY</a>
+        <a href="about.html" class="nav-link">ABOUT</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Magazine Content -->
+  <main class="magazine-content">
+    <div class="magazine-list" id="magazineList">
+      <!-- Articles will be loaded here -->
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="footer-header">
+        <div class="footer-logo">HIDDEN</div>
+        <p class="footer-description">Portfolio</p>
+      </div>
+      <hr class="footer-divider">
+      <div class="footer-bottom">
+        <p class="footer-copyright">© 2026 HIDDEN Yonsei. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Magazine Data -->
+  <script type="application/json" id="magazineData">
+[
+  {
+    "id": 1,
+    "category": "ARCHITECTURE",
+    "title": "Dutch House Analysis",
+    "date": "2026-01-15",
+    "content": "A deep dive into Rem Koolhaas's Dutch House design principles...",
+    "link": "",
+    "visible": true
+  },
+  {
+    "id": 2,
+    "category": "STUDY",
+    "title": "Material Exploration",
+    "date": "2026-01-10",
+    "content": "Exploring various architectural materials and their applications...",
+    "link": "",
+    "visible": true
+  },
+  {
+    "id": 3,
+    "category": "STUDY",
+    "title": "New Article",
+    "date": "2026-02-03",
+    "content": "",
+    "link": "",
+    "visible": true
+  }
+]
+</script>
+
+  <script>
+    // Format date to magazine style
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      const options = { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      return date.toLocaleDateString('en-US', options).toUpperCase().replace(',', '');
+    }
+
+    // Render magazine articles
+    function renderMagazine() {
+      const container = document.getElementById('magazineList');
+      const dataEl = document.getElementById('magazineData');
+      
+      if (!dataEl) return;
+      
+      let articles = [];
+      try {
+        articles = JSON.parse(dataEl.textContent);
+      } catch (e) {
+        console.warn('Could not parse magazine data:', e);
+        return;
+      }
+
+      container.innerHTML = articles
+        .filter(a => a.visible !== false)
+        .map(article => `
+          <article class="magazine-article" ${article.link ? `onclick="window.open('${article.link}', '_blank')"` : ''}>
+            <span class="magazine-category">${article.category || 'STUDY'}</span>
+            <h2 class="magazine-title">${article.title}</h2>
+            <time class="magazine-date">${formatDate(article.date)}</time>
+          </article>
+        `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', renderMagazine);
+  </script>
+
+  <script src="script.js"></script>
+</body>
+</html>

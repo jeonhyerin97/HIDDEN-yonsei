@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Backup folders (not needed on server)
+backups/
+editor_backups/
+
+# Local batch scripts
+*.bat
+
+# KakaoTalk temp images
+KakaoTalk_*.jpg
+images/KakaoTalk_*.jpg
+images/projects/KakaoTalk_*.jpg
+
+# Test files
+test_*.py
+
+# Local development
+.env
+.env.local
+
+# Visual editor (development tool)
+visual-editor/
+
+# Backup files
+*_backup.html
