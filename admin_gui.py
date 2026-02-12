@@ -37,6 +37,7 @@ GRAPHICS_HTML = SCRIPT_DIR / "graphics.html"
 ABOUT_HTML = SCRIPT_DIR / "about.html"
 INDEX_HTML = SCRIPT_DIR / "index.html"
 HOME_DATA_JSON = SCRIPT_DIR / "home_data.json"
+ABOUT_DATA_JSON = SCRIPT_DIR / "about_data.json"
 IMAGES_DIR = SCRIPT_DIR / "images"
 HOME_IMAGES_DIR = IMAGES_DIR / "home"
 BACKUP_DIR = SCRIPT_DIR / "backups"
@@ -4312,74 +4313,33 @@ class AboutEditorDialog(tk.Toplevel):
         self.create_ui()
     
     def load_about_data(self):
+        """about_data.json에서 데이터 로드"""
         self.data = {
-            'name_main': 'Hyerin Jeon,',
-            'name_title': 'Student',
-            'affiliation': 'Student of Yonsei University, Dept. of Interior Architecture and Built Environment',
-            'email': 'rnaakfn123@gmail.com',
-            'instagram': '@herisharch',
-            'education': [],
-            'experience': [],
-            'exhibitions': []
+            'hero': {
+                'name': 'HIDDEN',
+                'title': "Housing Interior Designer's DEN",
+                'affiliation': 'Student of Yonsei University, Dept. of Interior Architecture and Built Environment',
+                'affiliation_link': ''
+            },
+            'sections': [],
+            'footer': {
+                'email': 'yonseihidden25@gmail.com',
+                'instagram': 'https://www.instagram.com/hidden_yonsei/'
+            }
         }
+        
         try:
-            with open(ABOUT_HTML, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            # 이름 (name-main) - 링크 포함 가능
-            match = re.search(r'<span class="name-main">([\s\S]*?)</span>', content)
-            if match:
-                self.data['name_main'] = self._html_to_markdown(match.group(1).strip())
-            
-            # 타이틀 (name-title) - 링크 포함 가능
-            match = re.search(r'<span class="name-title">([\s\S]*?)</span>', content)
-            if match:
-                self.data['name_title'] = self._html_to_markdown(match.group(1).strip())
-            
-            # 소속 (affiliation) - 링크 포함 가능
-            match = re.search(r'<p class="about-affiliation">([\s\S]*?)</p>', content)
-            if match:
-                affiliation_html = match.group(1).strip()
-                # HTML 링크를 마크다운 형식으로 변환
-                self.data['affiliation'] = self._html_to_markdown(affiliation_html)
-            
-            # CONTACT 섹션에서 이메일과 인스타그램 파싱 (순서 기반)
-            contact_pattern = r'<h2 class="cv-heading">CONTACT</h2>\s*<ul class="cv-list-simple">([\s\S]*?)</ul>'
-            contact_match = re.search(contact_pattern, content)
-            if contact_match:
-                contact_content = contact_match.group(1)
-                # 모든 <li> 항목 추출
-                li_items = re.findall(r'<li>([\s\S]*?)</li>', contact_content)
-                
-                # 첫 번째 항목: 이메일 (mailto: 포함)
-                for item in li_items:
-                    if 'mailto:' in item:
-                        email_match = re.search(r'mailto:([^"]+)', item)
-                        if email_match:
-                            self.data['email'] = email_match.group(1)
-                        break
-                
-                # 두 번째 항목: 인스타그램 (instagram.com 포함 또는 @ 포함)
-                for item in li_items:
-                    if 'instagram.com' in item:
-                        # HTML 링크를 마크다운으로 변환
-                        self.data['instagram'] = self._html_to_markdown(item)
-                        break
-                    elif '@' in item and 'mailto:' not in item:
-                        # @ 기호가 있고 mailto가 아닌 경우
-                        text = re.sub(r'<[^>]+>', '', item).strip()
-                        self.data['instagram'] = text
-                        break
-            
-            # EDUCATION 파싱
-            self.data['education'] = self._parse_cv_section(content, 'EDUCATION')
-            
-            # EXPERIENCE 파싱
-            self.data['experience'] = self._parse_cv_section(content, 'EXPERIENCE')
-            
-            # EXHIBITIONS 파싱
-            self.data['exhibitions'] = self._parse_cv_section(content, 'EXHIBITIONS')
-            
+            if ABOUT_DATA_JSON.exists():
+                with open(ABOUT_DATA_JSON, 'r', encoding='utf-8') as f:
+                    self.data = json.load(f)
+            else:
+                # 기본 섹션 추가
+                self.data['sections'] = [
+                    {'id': 'education', 'title': 'EDUCATION', 'visible': True, 'items': []},
+                    {'id': 'experience', 'title': 'EXPERIENCE', 'visible': True, 'items': []},
+                    {'id': 'exhibitions', 'title': 'EXHIBITIONS', 'visible': True, 'items': []},
+                    {'id': 'contact', 'title': 'CONTACT', 'visible': True, 'items': []}
+                ]
         except Exception as e:
             print(f"About 데이터 로드 오류: {e}")
     
@@ -4421,10 +4381,10 @@ class AboutEditorDialog(tk.Toplevel):
         # 스크롤 캔버스
         canvas = tk.Canvas(self, bg=ModernStyle.BG_WHITE, highlightthickness=0)
         scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
-        scrollable = tk.Frame(canvas, bg=ModernStyle.BG_WHITE)
+        self.scrollable = tk.Frame(canvas, bg=ModernStyle.BG_WHITE)
         
-        scrollable.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        canvas_window_id = canvas.create_window((0, 0), window=scrollable, anchor="nw")
+        self.scrollable.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas_window_id = canvas.create_window((0, 0), window=self.scrollable, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
         def configure_scroll_width(event, cid=canvas_window_id):
@@ -4442,44 +4402,45 @@ class AboutEditorDialog(tk.Toplevel):
         scrollbar.pack(side="right", fill="y")
         
         self.entries = {}
-        self.section_widgets = {'education': [], 'experience': [], 'exhibitions': []}
+        self.section_widgets = {}  # 동적 섹션용
+        self.section_frames = {}   # 섹션 프레임 저장
         
         # 헤더
-        tk.Label(scrollable, text="About 페이지 편집", font=ModernStyle.get_font(16, 'bold'),
+        tk.Label(self.scrollable, text="About 페이지 편집", font=ModernStyle.get_font(16, 'bold'),
                 bg=ModernStyle.BG_WHITE).pack(anchor=tk.W, padx=20, pady=(20, 10))
         
         # === 기본 정보 섹션 ===
-        self._create_section_header(scrollable, "기본 정보 (Hero)")
+        self._create_section_header(self.scrollable, "기본 정보 (Hero)")
         
-        # 이름 (콤마 포함)
-        self._create_linkable_field(scrollable, 'name_main', '이름 (예: Hyerin Jeon,)', 
-                                   self.data.get('name_main', ''))
+        hero = self.data.get('hero', {})
+        self._create_simple_field(self.scrollable, 'hero_name', '이름', hero.get('name', 'HIDDEN'))
+        self._create_simple_field(self.scrollable, 'hero_title', '타이틀', hero.get('title', ''))
+        self._create_simple_field(self.scrollable, 'hero_affiliation', '소속', hero.get('affiliation', ''))
         
-        # 타이틀
-        self._create_linkable_field(scrollable, 'name_title', '타이틀 (예: Student)', 
-                                   self.data.get('name_title', ''))
+        # === 동적 섹션들 ===
+        self.sections_container = tk.Frame(self.scrollable, bg=ModernStyle.BG_WHITE)
+        self.sections_container.pack(fill=tk.X, pady=10)
         
-        # 소속
-        self._create_linkable_field(scrollable, 'affiliation', '소속 (한 줄 설명)', 
-                                   self.data.get('affiliation', ''))
+        for section in self.data.get('sections', []):
+            self._create_dynamic_section(section)
         
-        # === EDUCATION 섹션 ===
-        self._create_editable_section(scrollable, 'education', 'EDUCATION (학력)', self.data['education'])
+        # === 새 섹션 추가 버튼 ===
+        add_section_frame = tk.Frame(self.scrollable, bg=ModernStyle.BG_WHITE)
+        add_section_frame.pack(fill=tk.X, padx=20, pady=15)
         
-        # === EXPERIENCE 섹션 ===
-        self._create_editable_section(scrollable, 'experience', 'EXPERIENCE (경력)', self.data['experience'])
+        tk.Button(add_section_frame, text="➕ 새 섹션 추가", font=ModernStyle.get_font(11, 'bold'),
+                 bg="#4CAF50", fg="white", relief='flat', padx=20, pady=10,
+                 cursor='hand2', command=self._add_new_section).pack(anchor=tk.W)
         
-        # === EXHIBITIONS 섹션 ===
-        self._create_editable_section(scrollable, 'exhibitions', 'EXHIBITIONS (전시)', self.data['exhibitions'])
+        # === 연락처 정보 ===
+        self._create_section_header(self.scrollable, "연락처 (Footer)")
         
-        # === 연락처 섹션 ===
-        self._create_section_header(scrollable, "연락처 (CONTACT)")
-        
-        for key, label in [('email', '이메일'), ('instagram', '인스타그램 (@username)')]:
-            self._create_linkable_field(scrollable, key, label, self.data.get(key, ''))
+        footer = self.data.get('footer', {})
+        self._create_simple_field(self.scrollable, 'footer_email', '이메일', footer.get('email', ''))
+        self._create_simple_field(self.scrollable, 'footer_instagram', '인스타그램 URL', footer.get('instagram', ''))
         
         # 버튼
-        btn_frame = tk.Frame(scrollable, bg=ModernStyle.BG_WHITE)
+        btn_frame = tk.Frame(self.scrollable, bg=ModernStyle.BG_WHITE)
         btn_frame.pack(fill=tk.X, padx=20, pady=30)
         
         tk.Button(btn_frame, text="💾 저장", font=ModernStyle.get_font(11, 'bold'),
@@ -4488,6 +4449,229 @@ class AboutEditorDialog(tk.Toplevel):
         tk.Button(btn_frame, text="취소", font=ModernStyle.get_font(10),
                  bg=ModernStyle.BG_WHITE, relief='solid', borderwidth=1,
                  padx=20, pady=8, command=self.destroy).pack(side=tk.LEFT)
+    
+    def _create_simple_field(self, parent, key, label, value):
+        """간단한 텍스트 필드 생성"""
+        frame = tk.Frame(parent, bg=ModernStyle.BG_WHITE)
+        frame.pack(fill=tk.X, padx=20, pady=5)
+        
+        tk.Label(frame, text=label, font=ModernStyle.get_font(9),
+                bg=ModernStyle.BG_WHITE, fg=ModernStyle.TEXT_SUBTLE).pack(anchor=tk.W)
+        
+        entry = tk.Entry(frame, font=ModernStyle.get_font(10), relief='solid', borderwidth=1)
+        entry.insert(0, value)
+        entry.pack(fill=tk.X, pady=(3, 0), ipady=6)
+        
+        self.entries[key] = entry
+    
+    def _create_dynamic_section(self, section_data):
+        """동적 섹션 생성"""
+        section_id = section_data.get('id', f'section_{len(self.section_widgets)}')
+        title = section_data.get('title', 'NEW SECTION')
+        visible = section_data.get('visible', True)
+        items = section_data.get('items', [])
+        
+        # 섹션 프레임
+        section_frame = tk.Frame(self.sections_container, bg=ModernStyle.BG_WHITE, 
+                                relief='solid', borderwidth=1)
+        section_frame.pack(fill=tk.X, padx=20, pady=10)
+        
+        # 헤더 (타이틀 + 표시/삭제 버튼)
+        header_frame = tk.Frame(section_frame, bg=ModernStyle.BG_LIGHT)
+        header_frame.pack(fill=tk.X)
+        
+        # 타이틀 입력
+        title_entry = tk.Entry(header_frame, font=ModernStyle.get_font(11, 'bold'),
+                              relief='flat', bg=ModernStyle.BG_LIGHT, width=25)
+        title_entry.insert(0, title)
+        title_entry.pack(side=tk.LEFT, padx=10, pady=8)
+        
+        # 표시 여부 체크박스
+        visible_var = tk.BooleanVar(value=visible)
+        tk.Checkbutton(header_frame, text="표시", variable=visible_var,
+                      bg=ModernStyle.BG_LIGHT, font=ModernStyle.get_font(9)).pack(side=tk.LEFT, padx=10)
+        
+        # 삭제 버튼
+        tk.Button(header_frame, text="🗑️ 삭제", font=ModernStyle.get_font(9),
+                 bg=ModernStyle.DANGER, fg="white", relief='flat', padx=10,
+                 command=lambda: self._delete_section(section_id, section_frame)).pack(side=tk.RIGHT, padx=10, pady=5)
+        
+        # 순서 변경 버튼들
+        order_frame = tk.Frame(header_frame, bg=ModernStyle.BG_LIGHT)
+        order_frame.pack(side=tk.RIGHT, padx=5)
+        
+        tk.Button(order_frame, text="▲", font=ModernStyle.get_font(9, 'bold'),
+                 bg="#555", fg="white", relief='flat', width=3,
+                 cursor='hand2',
+                 command=lambda: self._move_section_up(section_id)).pack(side=tk.LEFT, padx=1)
+        tk.Button(order_frame, text="▼", font=ModernStyle.get_font(9, 'bold'),
+                 bg="#555", fg="white", relief='flat', width=3,
+                 cursor='hand2',
+                 command=lambda: self._move_section_down(section_id)).pack(side=tk.LEFT, padx=1)
+        
+        # 항목들 컨테이너
+        items_container = tk.Frame(section_frame, bg=ModernStyle.BG_WHITE)
+        items_container.pack(fill=tk.X, padx=10, pady=10)
+        
+        # 섹션 위젯 저장
+        self.section_widgets[section_id] = {
+            'title_entry': title_entry,
+            'visible_var': visible_var,
+            'items_container': items_container,
+            'items': []
+        }
+        self.section_frames[section_id] = section_frame
+        
+        # 기존 항목 추가
+        for item in items:
+            self._add_item_to_section(section_id, item)
+        
+        # 항목 추가 버튼
+        add_btn = tk.Button(items_container, text="+ 항목 추가", font=ModernStyle.get_font(9),
+                           bg=ModernStyle.BG_WHITE, fg=ModernStyle.ACCENT,
+                           relief='flat', cursor='hand2',
+                           command=lambda: self._add_item_to_section(section_id, {}))
+        add_btn.pack(anchor=tk.W, pady=5)
+        self.section_widgets[section_id]['add_btn'] = add_btn
+    
+    def _add_item_to_section(self, section_id, item_data):
+        """섹션에 항목 추가"""
+        container = self.section_widgets[section_id]['items_container']
+        
+        frame = tk.Frame(container, bg=ModernStyle.BG_WHITE)
+        frame.pack(fill=tk.X, pady=3)
+        
+        # 날짜/라벨 입력
+        date_entry = tk.Entry(frame, font=ModernStyle.get_font(9), width=15, relief='solid', borderwidth=1)
+        date_entry.insert(0, item_data.get('date', ''))
+        date_entry.pack(side=tk.LEFT, padx=(0, 5), ipady=4)
+        
+        # 내용 입력
+        content_entry = tk.Entry(frame, font=ModernStyle.get_font(9), relief='solid', borderwidth=1)
+        content_entry.insert(0, item_data.get('content', ''))
+        content_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5), ipady=4)
+        
+        # 삭제 버튼
+        tk.Button(frame, text="✕", font=ModernStyle.get_font(8),
+                 bg=ModernStyle.BG_WHITE, fg=ModernStyle.DANGER,
+                 relief='flat', cursor='hand2',
+                 command=lambda: self._remove_item(section_id, frame, item_widget)).pack(side=tk.LEFT)
+        
+        item_widget = {'frame': frame, 'date': date_entry, 'content': content_entry}
+        self.section_widgets[section_id]['items'].append(item_widget)
+        
+        # 추가 버튼을 맨 아래로
+        add_btn = self.section_widgets[section_id].get('add_btn')
+        if add_btn:
+            add_btn.pack_forget()
+            add_btn.pack(anchor=tk.W, pady=5)
+        
+        return item_widget
+    
+    def _remove_item(self, section_id, frame, item_widget):
+        """섹션에서 항목 제거"""
+        frame.destroy()
+        if item_widget in self.section_widgets[section_id]['items']:
+            self.section_widgets[section_id]['items'].remove(item_widget)
+    
+    def _add_new_section(self):
+        """새 섹션 추가"""
+        # 고유 ID 생성
+        section_id = f"custom_{len(self.section_widgets)}"
+        new_section = {
+            'id': section_id,
+            'title': 'NEW SECTION',
+            'visible': True,
+            'items': []
+        }
+        self._create_dynamic_section(new_section)
+    
+    def _delete_section(self, section_id, section_frame):
+        """섹션 삭제"""
+        if messagebox.askyesno("섹션 삭제", "이 섹션을 삭제하시겠습니까?"):
+            section_frame.destroy()
+            if section_id in self.section_widgets:
+                del self.section_widgets[section_id]
+            if section_id in self.section_frames:
+                del self.section_frames[section_id]
+    
+    def _move_section_up(self, section_id):
+        """섹션을 위로 이동"""
+        if section_id not in self.section_frames:
+            return
+        
+        # 현재 프레임들의 순서 가져오기
+        frames = list(self.section_frames.items())
+        current_idx = None
+        for i, (sid, frame) in enumerate(frames):
+            if sid == section_id:
+                current_idx = i
+                break
+        
+        if current_idx is None or current_idx == 0:
+            return  # 첫 번째이면 이동 불가
+        
+        # 위의 섹션과 교체
+        target_frame = self.section_frames[section_id]
+        above_section_id = frames[current_idx - 1][0]
+        above_frame = self.section_frames[above_section_id]
+        
+        # pack 순서 재정렬
+        target_frame.pack_forget()
+        above_frame.pack_forget()
+        
+        target_frame.pack(fill=tk.X, padx=20, pady=10, before=above_frame)
+        above_frame.pack(fill=tk.X, padx=20, pady=10)
+        
+        # section_frames 딕셔너리 순서 업데이트
+        new_frames = {}
+        for i, (sid, frame) in enumerate(frames):
+            if i == current_idx - 1:
+                new_frames[section_id] = self.section_frames[section_id]
+            elif i == current_idx:
+                new_frames[above_section_id] = self.section_frames[above_section_id]
+            else:
+                new_frames[sid] = frame
+        self.section_frames = new_frames
+    
+    def _move_section_down(self, section_id):
+        """섹션을 아래로 이동"""
+        if section_id not in self.section_frames:
+            return
+        
+        # 현재 프레임들의 순서 가져오기
+        frames = list(self.section_frames.items())
+        current_idx = None
+        for i, (sid, frame) in enumerate(frames):
+            if sid == section_id:
+                current_idx = i
+                break
+        
+        if current_idx is None or current_idx == len(frames) - 1:
+            return  # 마지막이면 이동 불가
+        
+        # 아래 섹션과 교체
+        target_frame = self.section_frames[section_id]
+        below_section_id = frames[current_idx + 1][0]
+        below_frame = self.section_frames[below_section_id]
+        
+        # pack 순서 재정렬
+        target_frame.pack_forget()
+        below_frame.pack_forget()
+        
+        below_frame.pack(fill=tk.X, padx=20, pady=10)
+        target_frame.pack(fill=tk.X, padx=20, pady=10, after=below_frame)
+        
+        # section_frames 딕셔너리 순서 업데이트
+        new_frames = {}
+        for i, (sid, frame) in enumerate(frames):
+            if i == current_idx:
+                new_frames[below_section_id] = self.section_frames[below_section_id]
+            elif i == current_idx + 1:
+                new_frames[section_id] = self.section_frames[section_id]
+            else:
+                new_frames[sid] = frame
+        self.section_frames = new_frames
     
     def _create_section_header(self, parent, title):
         """섹션 헤더 생성"""
@@ -4950,56 +5134,111 @@ class AboutEditorDialog(tk.Toplevel):
                 break
     
     def save(self):
+        """about_data.json 저장 후 about.html 업데이트"""
+        try:
+            # 데이터 수집
+            save_data = {
+                'hero': {
+                    'name': self.entries.get('hero_name', tk.Entry()).get().strip() or 'HIDDEN',
+                    'title': self.entries.get('hero_title', tk.Entry()).get().strip() or '',
+                    'affiliation': self.entries.get('hero_affiliation', tk.Entry()).get().strip() or ''
+                },
+                'sections': [],
+                'footer': {
+                    'email': self.entries.get('footer_email', tk.Entry()).get().strip() or '',
+                    'instagram': self.entries.get('footer_instagram', tk.Entry()).get().strip() or ''
+                }
+            }
+            
+            # 섹션 데이터 수집 (section_frames 순서대로)
+            for section_id in self.section_frames.keys():
+                if section_id not in self.section_widgets:
+                    continue
+                widgets = self.section_widgets[section_id]
+                section_data = {
+                    'id': section_id,
+                    'title': widgets['title_entry'].get().strip(),
+                    'visible': widgets['visible_var'].get(),
+                    'items': []
+                }
+                
+                for item_widget in widgets['items']:
+                    date = item_widget['date'].get().strip()
+                    content = item_widget['content'].get().strip()
+                    if date or content:
+                        section_data['items'].append({
+                            'date': date,
+                            'content': content
+                        })
+                
+                save_data['sections'].append(section_data)
+            
+            # about_data.json 저장
+            with open(ABOUT_DATA_JSON, 'w', encoding='utf-8') as f:
+                json.dump(save_data, f, ensure_ascii=False, indent=2)
+            
+            # about.html 업데이트
+            self._update_about_html(save_data)
+            
+            messagebox.showinfo("저장 완료", "About 페이지가 저장되었습니다.")
+            self.destroy()
+        except Exception as e:
+            messagebox.showerror("오류", f"저장 실패: {str(e)}")
+    
+    def _update_about_html(self, data):
+        """about.html 파일 업데이트"""
         try:
             with open(ABOUT_HTML, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # 이름 업데이트 (마크다운 링크 지원)
-            name_main = self.entries['name_main'].get().strip()
-            name_main_html = self._convert_markdown_links(name_main)
+            hero = data.get('hero', {})
+            
+            # 이름 업데이트
             content = re.sub(r'<span class="name-main">[\s\S]*?</span>',
-                           f'<span class="name-main">{name_main_html}</span>', content)
+                           f'<span class="name-main">{hero.get("name", "HIDDEN")},</span>', content)
             
-            # 타이틀 업데이트 (마크다운 링크 지원)
-            name_title = self.entries['name_title'].get().strip()
-            name_title_html = self._convert_markdown_links(name_title)
+            # 타이틀 업데이트
             content = re.sub(r'<span class="name-title">[\s\S]*?</span>',
-                           f'<span class="name-title">{name_title_html}</span>', content)
+                           f'<span class="name-title">{hero.get("title", "")}</span>', content)
             
-            # 소속 업데이트 (마크다운 링크 지원)
-            affiliation = self.entries['affiliation'].get().strip()
-            affiliation_html = self._convert_markdown_links(affiliation)
+            # 소속 업데이트
             content = re.sub(r'<p class="about-affiliation">[\s\S]*?</p>',
-                           f'<p class="about-affiliation">{affiliation_html}</p>', content)
+                           f'<p class="about-affiliation">{hero.get("affiliation", "")}</p>', content)
             
-            # EDUCATION 업데이트
-            content = self._update_cv_section(content, 'EDUCATION', 'education')
-            
-            # EXPERIENCE 업데이트
-            content = self._update_cv_section(content, 'EXPERIENCE', 'experience')
-            
-            # EXHIBITIONS 업데이트
-            content = self._update_cv_section(content, 'EXHIBITIONS', 'exhibitions')
-            
-            # CONTACT 섹션 전체 업데이트
-            email = self.entries['email'].get().strip()
-            instagram = self.entries['instagram'].get().strip()
-            
-            # 이메일 HTML 생성
-            if '](' in email:
-                email_html = self._convert_markdown_links(email)
-            else:
-                email_html = f'<a href="mailto:{email}">{email}</a>'
-            
-            # 인스타그램 HTML 생성
-            if '](' in instagram:
-                instagram_html = self._convert_markdown_links(instagram)
-            else:
-                # @username 형식에서 username 추출
-                username = instagram.lstrip('@')
-                instagram_html = f'<a href="https://www.instagram.com/{username}/" target="_blank" rel="noopener">{instagram}</a>'
+            # CV 섹션들 업데이트 (동적으로)
+            for section in data.get('sections', []):
+                section_title = section.get('title', '')
+                items = section.get('items', [])
+                
+                if not section.get('visible', True):
+                    continue
+                
+                items_html_list = []
+                for item in items:
+                    date = item.get('date', '')
+                    item_content = item.get('content', '')
+                    items_html_list.append(
+                        f'          <li><span class="cv-date">{date}</span><span class="cv-content">{item_content}</span></li>'
+                    )
+                
+                items_html = '\n'.join(items_html_list)
+                
+                # 섹션 패턴 매칭 및 교체
+                pattern = rf'(<h2\s+class="cv-heading">\s*{re.escape(section_title)}\s*</h2>\s*<ul\s+class="cv-list-simple">)[\s\S]*?(</ul>)'
+                replacement = f'\\g<1>\n{items_html}\n        \\g<2>'
+                content = re.sub(pattern, replacement, content, flags=re.IGNORECASE)
             
             # CONTACT 섹션 업데이트
+            footer = data.get('footer', {})
+            email = footer.get('email', '')
+            instagram = footer.get('instagram', '')
+            
+            email_html = f'<a href="mailto:{email}">{email}</a>' if email else ''
+            if instagram:
+                instagram_html = f'<a href="{instagram}" target="_blank" rel="noopener">@hidden_yonsei</a>'
+            else:
+                instagram_html = ''
+            
             contact_pattern = r'(<h2 class="cv-heading">CONTACT</h2>\s*<ul class="cv-list-simple">)[\s\S]*?(</ul>)'
             contact_items = f'''
           <li>{email_html}</li>
@@ -5009,11 +5248,9 @@ class AboutEditorDialog(tk.Toplevel):
             
             with open(ABOUT_HTML, 'w', encoding='utf-8') as f:
                 f.write(content)
-            
-            messagebox.showinfo("저장 완료", "About 페이지가 저장되었습니다.")
-            self.destroy()
+                
         except Exception as e:
-            messagebox.showerror("오류", f"저장 실패: {str(e)}")
+            print(f"about.html 업데이트 오류: {e}")
     
     def _convert_markdown_links(self, text):
         """마크다운 링크 [텍스트](URL|스타일)를 HTML 링크로 변환"""
@@ -5934,7 +6171,7 @@ class PortfolioAdminApp:
                  padx=10, pady=8, cursor='hand2',
                  command=self.cleanup_files).pack(side=tk.LEFT, padx=(0, 5))
         
-        for text, cmd in [("📁 폴더", self.open_folder), ("👁 미리보기", self.preview), ("🔄", self.load_data)]:
+        for text, cmd in [("📁 폴더", self.open_folder), ("👁 미리보기", self.preview), ("📱 모바일", self.preview_mobile), ("🔄", self.load_data)]:
             tk.Button(right, text=text, font=ModernStyle.get_font(10),
                      bg=ModernStyle.BG_WHITE, relief='solid', borderwidth=1,
                      padx=12, pady=8, command=cmd).pack(side=tk.LEFT, padx=3)
@@ -6384,6 +6621,182 @@ class PortfolioAdminApp:
     
     def preview(self):
         webbrowser.open(f'file:///{self.current_html}')
+    
+    def preview_mobile(self):
+        """모바일 미리보기 - 모바일 뷰포트로 브라우저 열기"""
+        import urllib.parse
+        # Windows 경로 처리
+        html_path = str(self.current_html).replace('\\', '/')
+        if html_path.startswith('/'):
+            # 절대 경로인 경우
+            html_path = html_path
+        else:
+            # 상대 경로인 경우
+            html_path = str(self.current_html.absolute()).replace('\\', '/')
+        # 모바일 User-Agent와 뷰포트를 시뮬레이션하는 HTML 파일 생성
+        mobile_preview_html = SCRIPT_DIR / "mobile_preview_temp.html"
+        
+        with open(self.current_html, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        
+        # 모바일 미리보기용 HTML 생성 (iframe으로 감싸서 모바일 뷰포트 시뮬레이션)
+        mobile_wrapper = f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모바일 미리보기 - {self.current_html.name}</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }}
+        .mobile-frame {{
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 30px;
+            padding: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }}
+        .mobile-screen {{
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 22px;
+            overflow: hidden;
+            position: relative;
+        }}
+        .mobile-notch {{
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }}
+        iframe {{
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }}
+        .controls {{
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }}
+        .controls button {{
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }}
+        .controls button:hover {{
+            background: #0052a3;
+        }}
+        .device-selector {{
+            margin-bottom: 10px;
+        }}
+        .device-selector select {{
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="device-selector">
+            <select id="deviceSelect" onchange="changeDevice()">
+                <option value="iphone">iPhone 12/13 (375x812)</option>
+                <option value="iphone-pro">iPhone 14 Pro (393x852)</option>
+                <option value="galaxy">Galaxy S21 (360x800)</option>
+                <option value="ipad">iPad Mini (768x1024)</option>
+                <option value="custom">커스텀</option>
+            </select>
+        </div>
+        <button onclick="rotateDevice()">🔄 회전</button>
+        <button onclick="reloadFrame()">🔄 새로고침</button>
+        <button onclick="window.close()">✕ 닫기</button>
+    </div>
+    <div class="mobile-frame" id="mobileFrame">
+        <div class="mobile-notch"></div>
+        <div class="mobile-screen">
+            <iframe id="previewFrame" src="file:///{html_path}"></iframe>
+        </div>
+    </div>
+    <script>
+        let isPortrait = true;
+        const devices = {{
+            'iphone': {{ width: 375, height: 812 }},
+            'iphone-pro': {{ width: 393, height: 852 }},
+            'galaxy': {{ width: 360, height: 800 }},
+            'ipad': {{ width: 768, height: 1024 }},
+            'custom': {{ width: 375, height: 812 }}
+        }};
+        
+        function changeDevice() {{
+            const select = document.getElementById('deviceSelect');
+            const device = devices[select.value];
+            const frame = document.getElementById('mobileFrame');
+            
+            if (isPortrait) {{
+                frame.style.width = device.width + 'px';
+                frame.style.height = device.height + 'px';
+            }} else {{
+                frame.style.width = device.height + 'px';
+                frame.style.height = device.width + 'px';
+            }}
+        }}
+        
+        function rotateDevice() {{
+            isPortrait = !isPortrait;
+            const frame = document.getElementById('mobileFrame');
+            const currentWidth = parseInt(frame.style.width);
+            const currentHeight = parseInt(frame.style.height);
+            frame.style.width = currentHeight + 'px';
+            frame.style.height = currentWidth + 'px';
+        }}
+        
+        function reloadFrame() {{
+            document.getElementById('previewFrame').src = document.getElementById('previewFrame').src;
+        }}
+    </script>
+</body>
+</html>"""
+        
+        try:
+            with open(mobile_preview_html, 'w', encoding='utf-8') as f:
+                f.write(mobile_wrapper)
+            webbrowser.open(f'file:///{mobile_preview_html}')
+        except Exception as e:
+            messagebox.showerror("오류", f"모바일 미리보기 생성 실패: {e}")
     
     def edit_home(self):
         """홈 화면 편집"""

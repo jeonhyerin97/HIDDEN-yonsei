@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모바일 미리보기 - projects.html</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .mobile-frame {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 30px;
+            padding: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .mobile-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 22px;
+            overflow: hidden;
+            position: relative;
+        }
+        .mobile-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+        .controls button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .controls button:hover {
+            background: #0052a3;
+        }
+        .device-selector {
+            margin-bottom: 10px;
+        }
+        .device-selector select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="device-selector">
+            <select id="deviceSelect" onchange="changeDevice()">
+                <option value="iphone">iPhone 12/13 (375x812)</option>
+                <option value="iphone-pro">iPhone 14 Pro (393x852)</option>
+                <option value="galaxy">Galaxy S21 (360x800)</option>
+                <option value="ipad">iPad Mini (768x1024)</option>
+                <option value="custom">커스텀</option>
+            </select>
+        </div>
+        <button onclick="rotateDevice()">🔄 회전</button>
+        <button onclick="reloadFrame()">🔄 새로고침</button>
+        <button onclick="window.close()">✕ 닫기</button>
+    </div>
+    <div class="mobile-frame" id="mobileFrame">
+        <div class="mobile-notch"></div>
+        <div class="mobile-screen">
+            <iframe id="previewFrame" src="file:///C:/Users/Hyerin jeon/Desktop/2026/20260103~0228_명슥터디/02_HIDDEN_cursor/projects.html"></iframe>
+        </div>
+    </div>
+    <script>
+        let isPortrait = true;
+        const devices = {
+            'iphone': { width: 375, height: 812 },
+            'iphone-pro': { width: 393, height: 852 },
+            'galaxy': { width: 360, height: 800 },
+            'ipad': { width: 768, height: 1024 },
+            'custom': { width: 375, height: 812 }
+        };
+        
+        function changeDevice() {
+            const select = document.getElementById('deviceSelect');
+            const device = devices[select.value];
+            const frame = document.getElementById('mobileFrame');
+            
+            if (isPortrait) {
+                frame.style.width = device.width + 'px';
+                frame.style.height = device.height + 'px';
+            } else {
+                frame.style.width = device.height + 'px';
+                frame.style.height = device.width + 'px';
+            }
+        }
+        
+        function rotateDevice() {
+            isPortrait = !isPortrait;
+            const frame = document.getElementById('mobileFrame');
+            const currentWidth = parseInt(frame.style.width);
+            const currentHeight = parseInt(frame.style.height);
+            frame.style.width = currentHeight + 'px';
+            frame.style.height = currentWidth + 'px';
+        }
+        
+        function reloadFrame() {
+            document.getElementById('previewFrame').src = document.getElementById('previewFrame').src;
+        }
+    </script>
+</body>
+</html>

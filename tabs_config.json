@@ -10,20 +10,20 @@
     "id": "drawings",
     "name": "DRAWINGS",
     "file": "drawings.html",
-    "visible": true,
+    "visible": false,
     "order": 1
   },
   {
     "id": "graphics",
     "name": "GRAPHICS",
     "file": "graphics.html",
-    "visible": true,
+    "visible": false,
     "order": 2
   },
   {
-    "id": "study",
-    "name": "STUDY",
-    "file": "study.html",
+    "id": "exhibition",
+    "name": "EXHIBITION",
+    "file": "exhibition.html",
     "visible": true,
     "order": 3
   }

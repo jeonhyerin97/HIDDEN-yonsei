@@ -111,6 +111,7 @@
     const path = window.location.pathname.toLowerCase();
     if (path.includes('drawings.html')) return 'drawings';
     if (path.includes('graphics.html')) return 'graphics';
+    if (path.includes('exhibition.html')) return 'exhibition';
     if (path.includes('about.html')) return 'about';
     if (path.includes('index.html') || path.endsWith('/')) return 'index';
     return 'projects'; // projects.html
@@ -134,13 +135,9 @@
         if (footerData.projects) {
           renderFooterFromData('footerProjectList', footerData.projects, 'projects.html', pageType === 'projects');
         }
-        // Drawings 렌더링
-        if (footerData.drawings) {
-          renderFooterFromData('footerDrawingList', footerData.drawings, 'drawings.html', pageType === 'drawings');
-        }
-        // Graphics 렌더링
-        if (footerData.graphics) {
-          renderFooterFromData('footerGraphicList', footerData.graphics, 'graphics.html', pageType === 'graphics');
+        // Exhibition 렌더링
+        if (footerData.exhibition) {
+          renderFooterFromData('footerExhibitionList', footerData.exhibition, 'exhibition.html', pageType === 'exhibition');
         }
         return;
       } catch (e) {
@@ -151,21 +148,14 @@
     // footerData가 없으면 기존 방식 사용 (fetch)
     if (pageType === 'projects') {
       renderFooterSectionWithData('footerProjectList', projectsData, true);
-      fetchAndRenderFooterSection('drawings.html', 'footerDrawingList', 'drawings.html');
-      fetchAndRenderFooterSection('graphics.html', 'footerGraphicList', 'graphics.html');
-    } else if (pageType === 'drawings') {
+      fetchAndRenderFooterSection('exhibition.html', 'footerExhibitionList', 'exhibition.html');
+    } else if (pageType === 'exhibition') {
       fetchAndRenderFooterSection('projects.html', 'footerProjectList', 'projects.html');
-      renderFooterSectionWithData('footerDrawingList', projectsData, true);
-      fetchAndRenderFooterSection('graphics.html', 'footerGraphicList', 'graphics.html');
-    } else if (pageType === 'graphics') {
-      fetchAndRenderFooterSection('projects.html', 'footerProjectList', 'projects.html');
-      fetchAndRenderFooterSection('drawings.html', 'footerDrawingList', 'drawings.html');
-      renderFooterSectionWithData('footerGraphicList', projectsData, true);
+      renderFooterSectionWithData('footerExhibitionList', projectsData, true);
     } else {
       // about 또는 다른 페이지: 모든 섹션을 fetch로 가져오기
       fetchAndRenderFooterSection('projects.html', 'footerProjectList', 'projects.html');
-      fetchAndRenderFooterSection('drawings.html', 'footerDrawingList', 'drawings.html');
-      fetchAndRenderFooterSection('graphics.html', 'footerGraphicList', 'graphics.html');
+      fetchAndRenderFooterSection('exhibition.html', 'footerExhibitionList', 'exhibition.html');
     }
   }
   
@@ -279,28 +269,47 @@
   function handleThumbnailFallback() {
     const thumbs = document.querySelectorAll('.grid-thumb');
     
-    // Intersection Observer로 뷰포트에 보일 때만 이미지 로드
-    const observerOptions = {
-      root: null,
-      rootMargin: '100px', // 100px 전에 미리 로드 시작
-      threshold: 0.01
-    };
+    // 모바일에서는 IntersectionObserver가 제대로 작동하지 않을 수 있으므로
+    // 모바일 감지 및 폴백 처리
+    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const thumb = entry.target;
-          loadThumbnail(thumb);
-          observer.unobserve(thumb);
-        }
+    if (isMobile) {
+      // 모바일: 즉시 로드 (IntersectionObserver 대신)
+      thumbs.forEach(thumb => {
+        loadThumbnail(thumb);
       });
-    }, observerOptions);
-    
-    thumbs.forEach(thumb => {
-      // 초기에는 배경 이미지 제거 (placeholder만 표시)
-      thumb.style.backgroundImage = 'none';
-      imageObserver.observe(thumb);
-    });
+    } else {
+      // 데스크톱: Intersection Observer로 lazy loading
+      const observerOptions = {
+        root: null,
+        rootMargin: '100px', // 100px 전에 미리 로드 시작
+        threshold: 0.01
+      };
+      
+      // IntersectionObserver 지원 여부 확인
+      if (typeof IntersectionObserver !== 'undefined') {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const thumb = entry.target;
+              loadThumbnail(thumb);
+              observer.unobserve(thumb);
+            }
+          });
+        }, observerOptions);
+        
+        thumbs.forEach(thumb => {
+          // 초기에는 배경 이미지 제거 (placeholder만 표시)
+          thumb.style.backgroundImage = 'none';
+          imageObserver.observe(thumb);
+        });
+      } else {
+        // IntersectionObserver 미지원: 즉시 로드
+        thumbs.forEach(thumb => {
+          loadThumbnail(thumb);
+        });
+      }
+    }
   }
   
   // 개별 썸네일 로드 (jpg, webp 모두 지원)
@@ -532,14 +541,14 @@
       `;
     }
     
-    // 커스텀 필드 렌더링
+    // 커스텀 필드 렌더링 (마크다운 링크 지원)
     if (project.custom_fields && Array.isArray(project.custom_fields)) {
       project.custom_fields.forEach(field => {
         if (field.label && field.value) {
           metaHTML += `
             <div class="meta-item">
               <span class="meta-label">${escapeHtml(field.label)}</span>
-              <span class="meta-value">${escapeHtml(field.value)}</span>
+              <span class="meta-value">${convertMarkdownLinks(field.value)}</span>
             </div>
           `;
         }
@@ -803,6 +812,39 @@
     });
   }
   
+  // 마크다운 링크를 HTML로 변환
+  // 형식: [텍스트](URL) 또는 [텍스트](URL|스타일)
+  function convertMarkdownLinks(text) {
+    // 먼저 기본 텍스트를 이스케이프
+    let result = escapeHtml(text);
+    
+    // 마크다운 링크 패턴 매칭: [text](url) 또는 [text](url|style)
+    // 이스케이프된 버전에서 매칭
+    const linkPattern = /\[([^\]]+)\]\(([^)\|]+)(?:\|([^)]+))?\)/g;
+    
+    result = text.replace(linkPattern, (match, linkText, url, style) => {
+      const escapedText = escapeHtml(linkText);
+      const escapedUrl = escapeHtml(url.trim());
+      
+      // 스타일 클래스 결정
+      let className = 'caption-link';
+      if (style) {
+        const styleLower = style.toLowerCase().trim();
+        if (styleLower === 'highlight') {
+          className = 'caption-link caption-link--highlight';
+        } else if (styleLower === 'underline') {
+          className = 'caption-link caption-link--underline';
+        }
+      }
+      
+      return `<a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="${className}">${escapedText}</a>`;
+    });
+    
+    // 링크가 아닌 부분은 이스케이프
+    // 링크 태그 외의 텍스트만 이스케이프 처리
+    return result;
+  }
+  
   // 이미지에 캡션 추가
   function addCaptionToImage(figure, captionText) {
     // 이미 캡션이 있으면 스킵
@@ -824,10 +866,10 @@
     figure.parentNode.insertBefore(wrapper, figure);
     wrapper.appendChild(figure);
     
-    // 캡션 요소 추가
+    // 캡션 요소 추가 (마크다운 링크 변환)
     const caption = document.createElement('div');
     caption.className = 'image-caption';
-    caption.innerHTML = `<p>${escapeHtml(captionText)}</p>`;
+    caption.innerHTML = `<p>${convertMarkdownLinks(captionText)}</p>`;
     wrapper.appendChild(caption);
   }
   

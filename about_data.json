@@ -1,0 +1,54 @@
+{
+  "hero": {
+    "name": "HIDDEN",
+    "title": "Housing Interior Designer's DEN",
+    "affiliation": "HIDDEN, Interior Architecture Society, Yonsei University"
+  },
+  "sections": [
+    {
+      "id": "exhibitions",
+      "title": "EXHIBITIONS",
+      "visible": true,
+      "items": [
+        {
+          "date": "MAY 2025",
+          "content": "YONSEI UNIVERSITY HIDDEN 32ND — 1ST EXHIBITION"
+        },
+        {
+          "date": "NOV 2025",
+          "content": "YONSEI UNIVERSITY HIDDEN 33RD — 2ND EXHIBITION"
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "CONTACT",
+      "visible": true,
+      "items": [
+        {
+          "date": "",
+          "content": "yonseihidden25@gmail.com"
+        },
+        {
+          "date": "",
+          "content": "@hidden_yonsei"
+        }
+      ]
+    },
+    {
+      "id": "custom_2",
+      "title": "ABOUT HIDDEN",
+      "visible": true,
+      "items": [
+        {
+          "date": "",
+          "content": "HIDDEN is Yonsei University’s only interior architecture society.\nWe explore space through architecture, materiality, and experimentation.\nBy questioning the ordinary, we reveal new spatial possibilities."
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "email": "yonseihidden25@gmail.com",
+    "instagram": "https://www.instagram.com/hidden_yonsei/"
+  }
+}

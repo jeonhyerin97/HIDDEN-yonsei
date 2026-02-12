@@ -2008,6 +2008,10 @@ img {
   align-items: center;
   justify-content: center;
   transition: opacity var(--transition-fast);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .overlay-close:hover {
@@ -2064,12 +2068,14 @@ img {
   grid-template-columns: 1fr 320px;
   gap: var(--space-xl);
   margin-bottom: var(--space-xl);
+  align-items: start;
 }
 
 /* Cover Image */
 .project-cover {
   width: 100%;
   overflow: hidden;
+  align-self: start;
 }
 
 .project-cover-image {
@@ -2077,6 +2083,11 @@ img {
   aspect-ratio: 16 / 10;
   object-fit: cover;
   display: block;
+}
+
+/* 콘텐츠가 늘어나도 커버 이미지는 고정 */
+.project-content {
+  align-self: start;
 }
 
 /* Project Images */
@@ -2185,6 +2196,29 @@ img {
   line-height: 1.5;
 }
 
+.meta-value a,
+.meta-value .caption-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.meta-value a:hover,
+.meta-value .caption-link:hover {
+  opacity: 0.6;
+}
+
+.meta-value .caption-link--highlight {
+  background-color: rgba(255, 230, 0, 0.35);
+  padding: 0.1em 0.3em;
+  border-radius: 2px;
+}
+
+.meta-value .caption-link--underline {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .project-description {
   margin-bottom: var(--space-lg);
 }
@@ -2289,6 +2323,33 @@ img {
 .image-caption p[lang="ko"] {
   font-family: "Pretendard", "Georgia", serif;
   font-weight: 300;
+}
+
+/* Caption Links */
+.caption-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.caption-link:hover {
+  color: var(--color-accent, #000);
+  opacity: 0.7;
+}
+
+.caption-link--highlight {
+  background-color: rgba(255, 230, 0, 0.3);
+  padding: 0.1em 0.2em;
+  border-radius: 2px;
+}
+
+.caption-link--highlight:hover {
+  background-color: rgba(255, 230, 0, 0.5);
+}
+
+.caption-link--underline {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* Image Sections */
@@ -2840,6 +2901,17 @@ a.contact-value:hover {
     padding: var(--space-sm) var(--margin-side);
   }
   
+  .overlay-close {
+    top: var(--space-sm);
+    right: var(--space-sm);
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  
+  .overlay-content {
+    transform: translateY(10px);
+  }
+  
   .about-info {
     grid-template-columns: 1fr;
     gap: var(--space-lg);
@@ -2852,6 +2924,30 @@ a.contact-value:hover {
   
   .site-footer {
     padding: var(--space-lg) var(--margin-side) var(--space-md);
+  }
+  
+  /* 모바일에서 그리드 아이템이 확실히 보이도록 */
+  .archive-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.125rem !important;
+  }
+  
+  .grid-item {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .grid-item-image {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+  
+  .grid-thumb {
+    display: block !important;
+    visibility: visible !important;
   }
 }
 

@@ -3,52 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GRAPHICS — HIDDEN</title>
+  <title>EXHIBITION — HIDDEN</title>
   
-  <!-- Google Fonts - Archivo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- Pretendard (Korean font) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-  
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="page-archive">
   
-  <!-- Fixed navigation -->
   <nav class="nav nav--archive" aria-label="Main navigation">
     <div class="nav-inner">
       <a href="index.html" class="nav-logo">HIDDEN</a>
       <div class="nav-links">
         <a href="projects.html" class="nav-link">PROJECTS</a>
-        <a href="drawings.html" class="nav-link">DRAWINGS</a>
-        <a href="graphics.html" class="nav-link nav-link--active">GRAPHICS</a>
-        <a href="study.html" class="nav-link">STUDY</a>
+        <a href="exhibition.html" class="nav-link nav-link--active">EXHIBITION</a>
 
         <a href="about.html" class="nav-link">ABOUT</a>
       </div>
     </div>
   </nav>
 
-  <!-- Archive Grid -->
   <main class="archive">
     <header class="archive-header">
-      <h1 class="archive-title">GRAPHICS</h1>
+      <h1 class="archive-title">EXHIBITION</h1>
       <span class="archive-count">00</span>
     </header>
 
     <div class="archive-grid" role="list">
 
-      <article class="grid-item" data-project="0" data-reveal="load">
+      <article class="grid-item" data-project="0">
         <button class="grid-item-btn" aria-haspopup="dialog">
           <div class="grid-item-image">
-            <div class="grid-thumb" data-thumb="images/graphics/SEQUENCE/thumb.jpg" data-cover="images/graphics/SEQUENCE/cover.jpg" style="background-image: url('images/graphics/SEQUENCE/thumb.jpg');"></div>
+            <div class="grid-thumb" data-thumb="images/projects/HIDDEN 32nd Exhibition/thumb.jpg" data-cover="images/projects/HIDDEN 32nd Exhibition/cover.jpg" style="background-image: url('images/projects/HIDDEN 32nd Exhibition/thumb.jpg');"></div>
           </div>
           <div class="grid-item-overlay">
-            <span class="grid-item-title">SEQUENCE</span>
-            <span class="grid-item-year">2026</span>
+            <span class="grid-item-title">HIDDEN 32nd Exhibition</span>
+            <span class="grid-item-year">2025</span>
+          </div>
+        </button>
+      </article>
+
+      <article class="grid-item" data-project="1">
+        <button class="grid-item-btn" aria-haspopup="dialog">
+          <div class="grid-item-image">
+            <div class="grid-thumb" data-thumb="images/projects/HIDDEN 33rd Exhibition/thumb.jpg" data-cover="images/projects/HIDDEN 33rd Exhibition/cover.jpg" style="background-image: url('images/projects/HIDDEN 33rd Exhibition/thumb.jpg');"></div>
+          </div>
+          <div class="grid-item-overlay">
+            <span class="grid-item-title">HIDDEN 33rd Exhibition</span>
+            <span class="grid-item-year">2025</span>
           </div>
         </button>
       </article>
@@ -56,44 +60,29 @@
     </div>
   </main>
 
-  <!-- Project detail overlay/modal -->
   <div class="overlay" id="projectOverlay" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="overlay-backdrop"></div>
     <div class="overlay-content">
       <button class="overlay-close" aria-label="Close detail view">
         <span class="close-icon"></span>
       </button>
-
       <div class="overlay-scroll">
-        <!-- 동적으로 렌더링됨 (script.js) -->
         <article class="project-detail"></article>
       </div>
-
-      <!-- Overlay navigation -->
-      <nav class="overlay-nav" aria-label="Graphic navigation">
-        <button class="overlay-nav-btn overlay-nav-prev" aria-label="Previous graphic">
-          <span>PREV</span>
-        </button>
-        <button class="overlay-nav-btn overlay-nav-top" aria-label="Scroll to top">
-          <span class="arrow-up-icon"></span>
-        </button>
-        <button class="overlay-nav-btn overlay-nav-next" aria-label="Next graphic">
-          <span>NEXT</span>
-        </button>
+      <nav class="overlay-nav" aria-label="Navigation">
+        <button class="overlay-nav-btn overlay-nav-prev" aria-label="Previous"><span>PREV</span></button>
+        <button class="overlay-nav-btn overlay-nav-top" aria-label="Scroll to top"><span class="arrow-up-icon"></span></button>
+        <button class="overlay-nav-btn overlay-nav-next" aria-label="Next"><span>NEXT</span></button>
       </nav>
-
     </div>
   </div>
 
-  <!-- Site Footer -->
   <footer class="site-footer">
     <div class="site-footer-inner">
-      
       <div class="footer-header">
         <div class="footer-logo">HIDDEN</div>
         <p class="footer-description">
-          HIDDEN is Yonsei University’s only interior architecture society.
-We explore space through architecture, materiality, and experimentation.
+Housing Interior Designer's DEN — Yonsei University<br>
 By questioning the ordinary, we reveal new spatial possibilities.
         </p>
       </div>
@@ -138,39 +127,58 @@ By questioning the ordinary, we reveal new spatial possibilities.
     </div>
   </footer>
 
-  <!-- Graphics data -->
   <script type="application/json" id="projectsData">
   [
     {
         "id": 1,
         "index": "01",
-        "title": "SEQUENCE",
-        "slug": "SEQUENCE",
-        "display_title": "SEQUENCE",
-        "display_year": "2026",
-        "location": "",
-        "duration": "",
-        "program": "Logo Design",
+        "title": "HIDDEN 32nd Exhibition",
+        "slug": "HIDDEN 32nd Exhibition",
+        "display_title": "HIDDEN 32nd Exhibition",
+        "display_year": "2025",
+        "location": "Yonsei University Central Library, Joyoungseon Hall",
+        "duration": "May 26 – May 28",
+        "program": "Hidden Project Exhibition",
         "studio": "",
-        "description": "The logo for Yonsei University Department of Interior Architecture Student Council, 37th Generation, Sequence, is rooted in the architectural concept of sequence. In architecture, a sequence is not a static form, but a process: a flow that connects moments, spaces, and people.
-
-This idea is translated into the logo through an organic, continuous form, created by merging the letters S and Q from the word Sequence. Rather than emphasizing rigid geometry, the logo adopts a fluid and connected shape, symbolizing movement, transition, and interaction.
-
-The intertwined form represents how individual elements come together to create a coherent whole. This design reflects the student council's core philosophy: organic communication and continuous interaction with students.",
+        "description": "문장 너머의 공간: 인간은 어떻게 살아왔고, 살아갈 것인가?",
+        "description_ko": "",
         "visible": true,
         "model_cols": "3",
         "show_slides": true,
-        "cover_ratio": "1783:1999",
+        "cover_ratio": "3:4",
         "cover_position": "center center",
         "cover_zoom": 1.0,
-        "custom_fields": [],
-        "description_ko": "연세대학교 실내건축학과 학생회 SQUENCE의 로고를 디자인했다."
+        "custom_fields": []
+    },
+    {
+        "id": 2,
+        "index": "02",
+        "title": "HIDDEN 33rd Exhibition",
+        "slug": "HIDDEN 33rd Exhibition",
+        "display_title": "HIDDEN 33rd Exhibition",
+        "display_year": "2025",
+        "location": "Yonsei University Central Library, Joyoungseon Hall",
+        "duration": "Nov 19 – Nov 21, 2025",
+        "program": "Hidden Project Exhibition",
+        "studio": "",
+        "description": "<CRAFT: 물성〉
+ㅤ
+건축은 인문학과 Craft가 결합된 분야이다. 공간을 이루는 것은 잘 짜인 설계와 아름다운 디자인, 그리고 설계의 스토리만이 아니다.
+우리는 물성에 대한 이해가 필요하다.
+
+이러한 맥락에서 HIDDEN의 전시 〈CRAFT〉는 재료의 물성을 확장하고 그것을 파빌리온화하였다. 재료의 ‘물성’을 출발점으로 하여 목재·콘크리트·패브릭·종이의 물성을 실험한 프로젝트로,재료의 물리적 성질이 사회적 기능과 환경적 가치에 어떤 영향을 주는지를 탐구한다.",
+        "description_ko": "",
+        "visible": true,
+        "model_cols": "3",
+        "show_slides": true,
+        "cover_ratio": "954:1271",
+        "cover_position": "center center",
+        "cover_zoom": 1.0,
+        "custom_fields": []
     }
 ]
   </script>
-
-  <script type="application/json" id="footerData">{"projects": [{"title": "WOOD: BREATHE", "visible": true}, {"title": "SOFT CONCRETE", "visible": true}, {"title": "Fabric", "visible": true}, {"title": "PAPER: Folded Structure", "visible": true}, {"title": "HIDDEN EXHIBITION", "visible": true}], "drawings": [{"title": "JuunJ", "visible": true}, {"title": "SECTION STUDIES", "visible": true}, {"title": "MATERIAL EXPLORATIONS", "visible": true}, {"title": "MONTANA", "visible": true}], "graphics": [{"title": "SEQUENCE", "visible": true}]}</script>
-
+  <script type="application/json" id="footerData">{"projects": [{"title": "WOOD: BREATHE", "visible": true}, {"title": "SOFT CONCRETE", "visible": true}, {"title": "Fabric", "visible": true}, {"title": "PAPER: Folded Structure", "visible": true}], "exhibition": [{"title": "HIDDEN 32nd Exhibition", "visible": true}, {"title": "HIDDEN 33rd Exhibition", "visible": true}]}</script>
   <script src="script.js"></script>
 </body>
 </html>
